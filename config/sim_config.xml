@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simulation>
+  <!-- Temporal bounds (UTC) -->
+  <start>2026-04-21T05:00:00Z</start>
+  <end>2026-04-22T05:00:00Z</end>
+
+  <!-- AO polygon vertices — also the METAR sources -->
+  <stations>
+    <station icao="KCHO" role="vertex" description="Charlottesville Albemarle"/>
+    <station icao="KLYH" role="vertex" description="Lynchburg Regional"/>
+    <station icao="KROA" role="vertex" description="Roanoke Blacksburg Regional"/>
+    <station icao="KSHD" role="vertex" description="Shenandoah Valley Regional"/>
+  </stations>
+
+  <!-- Grid resolution: points per degree (used by interpolation layer) -->
+  <grid resolution="20"/>
+</simulation>

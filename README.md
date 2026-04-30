@@ -1,5 +1,7 @@
 # Weatherboy
 
+"wouldn't you like to know?"
+
 Spatiotemporal weather environment simulator for UAV mission analysis.
 
 Pulls real METAR observations, interpolates them onto a spatial grid, and animates the result over a georeferenced basemap. Also walks a defined flight path through the environment, logging the environmental forcing at each sample point. Built as the weather layer of a larger autonomous vehicle mission analysis framework.

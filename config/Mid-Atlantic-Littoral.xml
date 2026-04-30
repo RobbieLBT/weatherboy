@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simulation>
+  <start>2026-04-29T18:02:51+00:00</start>
+  <end>2026-04-30T18:02:51+00:00</end>
+  <control_volume kml="config/maps/Mid-Atlantic-Littoral.kml" />
+  <stations>
+    <station icao="KACY" description="Atlantic City International Airport" />
+    <station icao="KADW" description="Joint Base Andrews" />
+    <station icao="KAPG" description="Phillips Army Air Field" />
+    <station icao="KBWI" description="Baltimore/Washington International Thurgood Marshall Airport" />
+    <station icao="KDAA" description="Davison Army Air Field" />
+    <station icao="KDOV" description="Dover Civil Air Terminal/Dover Air Force Base" />
+    <station icao="KECG" description="Elizabeth City Regional Airport &amp; Coast Guard Air Station" />
+    <station icao="KEWN" description="Coastal Carolina Regional Airport" />
+    <station icao="KFAF" description="Felker Army Air Field" />
+    <station icao="KILG" description="Wilmington Airport" />
+    <station icao="KILM" description="Wilmington International Airport" />
+    <station icao="KLFI" description="Langley Air Force Base" />
+    <station icao="KNCA" description="MCAS New River / McCutcheon Field" />
+    <station icao="KNHK" description="Patuxent River Naval Air Station (Trapnell Field)" />
+    <station icao="KNKT" description="Cherry Point MCAS / Cunningham Field/" />
+    <station icao="KOAJ" description="Albert J Ellis Airport" />
+    <station icao="KOXB" description="Ocean City Municipal Airport" />
+    <station icao="KSBY" description="Salisbury Ocean City Wicomico Regional Airport" />
+  </stations>
+  <buoys>
+    <buoy id="41007" />
+    <buoy id="41013" description="Frying Pan Shoals, NC" />
+    <buoy id="41015" />
+    <buoy id="41024" description="Sunset Nearshore, NC (SUN2)" />
+    <buoy id="41035" description="Onslow Bay Inner, NC" />
+    <buoy id="41036" description="Onslow Bay Outer, NC" />
+    <buoy id="41037" description="Wrightsville Beach Offshore, NC (ILM3)" />
+    <buoy id="41062" description="Hatteras Bay (B1)" />
+    <buoy id="41063" description="Raleigh Bay (B2)" />
+    <buoy id="41083" description="OOI Pioneer - Mid-Atlantic Bight Southern Surface Mooring" />
+    <buoy id="44001" />
+    <buoy id="44006" />
+    <buoy id="44009" description="DELAWARE BAY 26 NM Southeast of Cape May, NJ" />
+    <buoy id="44010" />
+    <buoy id="44012" />
+    <buoy id="44014" description="VIRGINIA BEACH 64 NM East of Virginia Beach, VA" />
+    <buoy id="44023" />
+    <buoy id="44054" description="Lower Delaware Bay Buoy" />
+    <buoy id="44056" description="Duck FRF, NC" />
+    <buoy id="44058" description="Stingray Point, VA" />
+    <buoy id="44062" description="Gooses Reef, MD" />
+    <buoy id="44066" description="Texas Tower #4 - 75 NM East of Long Beach, NJ" />
+    <buoy id="44079" description="OOI Pioneer - Mid-Atlantic Bight Northern Surface Mooring" />
+    <buoy id="44089" description="Wallops Island, VA (224)" />
+    <buoy id="brbn4" description="Brant Beach, NJ" />
+    <buoy id="eb52" />
+    <buoy id="hcgn7" description="8654467 - USCG Station Hatteras, NC" />
+    <buoy id="jprn7" description="Jennette's Pier, Nags Head, NC" />
+    <buoy id="mrcp1" description="8540433 - Marcus Hook, PA" />
+    <buoy id="ncdv2" description="8635027 - Dahlgren, VA" />
+    <buoy id="wahv2" description="8631044 - Wachapreague, VA" />
+    <buoy id="zbqn7" description="Zeke's Basin, North Carolina" />
+  </buoys>
+  <grid resolution="20" />
+</simulation>

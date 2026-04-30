@@ -13,15 +13,26 @@ Lessons learned
 - sts/ets datetime format replaced year1/month1/.../hour2 params (422 otherwise)
 - report_type param removed — no longer accepted
 - Iowa State strips the K prefix from ICAO codes; re-added on parse
+- 5+-digit pure-numeric station IDs are rejected by the API; filtered out on entry
 """
 
 import csv
 import io
+import re
 from datetime import datetime, timezone
 
 import requests
 
 IOWA_URL = "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py"
+
+
+def _is_valid_mesonet_id(sid: str) -> bool:
+    """
+    Iowa State Mesonet rejects station IDs that are 5+ pure digits.
+    Valid IDs are either ICAO alpha codes (e.g. KCHO) or short numeric
+    WMO-style codes up to 4 digits (e.g. 3363).
+    """
+    return not re.fullmatch(r'\d{5,}', sid.strip())
 
 
 def fetch_metars(stations: list[str], start: datetime, end: datetime) -> dict:
@@ -53,7 +64,15 @@ def fetch_metars(stations: list[str], start: datetime, end: datetime) -> dict:
     skyc1-3 : str | None  sky condition (CLR/FEW/SCT/BKN/OVC)
     skyl1-3 : float | None  layer height (hundreds of feet)
     """
-    params = [("station", s) for s in stations]
+    # ── Filter out IDs the Mesonet API cannot accept ──────────────────────────
+    valid   = [s for s in stations if _is_valid_mesonet_id(s)]
+    skipped = [s for s in stations if not _is_valid_mesonet_id(s)]
+    if skipped:
+        print(f"  [WARN] Skipping unrecognised station IDs (5+ digit numeric): {skipped}")
+    if not valid:
+        raise RuntimeError("No valid station IDs remain after filtering.")
+
+    params = [("station", s) for s in valid]
     params += [
         ("data",   "drct"),
         ("data",   "sknt"),
@@ -154,10 +173,13 @@ def fetch_metars(stations: list[str], start: datetime, end: datetime) -> dict:
         }
         result.setdefault(stn, []).append(obs)
 
-    missing = [s for s in stations if not result.get(s)]
+    # Check only against IDs that were actually submitted to the API,
+    # accounting for the K-prefix Iowa State strips on parse.
+    missing = [s for s in valid if not result.get("K" + s) and not result.get(s)]
     if missing:
-        raise RuntimeError(f"No valid observations returned for: {missing}")
-
+        print(f"  [WARN] No observations returned for: {missing} "
+            f"(station may not report publicly — skipping)")
+    
     for stn in result:
         result[stn].sort(key=lambda x: x["time"])
 

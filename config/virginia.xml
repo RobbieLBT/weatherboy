@@ -2,7 +2,7 @@
 <simulation>
   <!-- Temporal bounds (UTC) -->
   <start>2026-04-21T05:00:00Z</start>
-  <end>2026-04-22T05:00:00Z</end>
+  <end>2026-04-27T05:00:00Z</end>
 
   <!-- Control volume: clips Voronoi cells and sets map extent -->
   <control_volume kml="config/maps/Virginia.kml"/>
@@ -10,41 +10,47 @@
   <!-- AO polygon vertices — also the METAR sources -->
   <stations>
     <station icao="KCHO" role="vertex" description="Charlottesville Albemarle"/>
-    <station icao="KLYH" role="vertex" description="Lynchburg Regional"/>
-    <station icao="KROA" role="vertex" description="Roanoke Blacksburg Regional"/>
-    <station icao="KSHD" role="vertex" description="Shenandoah Valley Regional"/>
-    <station icao="KORF" role="vertex" description="Norfolk International"/>
-    <station icao="KIAD" role="vertex" description="Dulles International"/>
-    <station icao="KDCA" role="vertex" description="Ronald Reagan National"/>
+    <station icao="KLYH"/>
+    <station icao="KROA"/>
+    <station icao="KSHD"/>
+    <station icao="KORF"/>
+    <station icao="KIAD"/>
+    <station icao="KDCA"/>
     
-    <station icao="KMFV" role="vertex" description=""/>
-    <station icao="KLFI" role="vertex" description=""/>
-    <station icao="KAVC" role="vertex" description=""/>
-    <station icao="KEMV" role="vertex" description=""/>
-    <station icao="KMTV" role="vertex" description=""/>
-    <station icao="KHLX" role="vertex" description=""/>
+    <station icao="KMFV"/>
+    <station icao="KLFI"/>
+    <station icao="KAVC"/>
+    <station icao="KEMV"/>
+    <station icao="KMTV"/>
+    <station icao="KHLX"/>
     
-    <station icao="KVJI" role="vertex" description=""/>
-    <station icao="KLNP" role="vertex" description=""/>
-    <station icao="K0VG" role="vertex" description=""/>
+    <station icao="KVJI"/>
+    <station icao="KLNP"/>
+    <station icao="K0VG"/>
 
-    <station icao="KPTB" role="vertex" description=""/>
-    <station icao="KRIC" role="vertex" description=""/>
-    <station icao="KFYJ" role="vertex" description=""/>
+    <station icao="KPTB"/>
+    <station icao="KRIC"/>
+    <station icao="KFYJ"/>
 
-    <station icao="KTGI" role="vertex" description=""/>
-    <station icao="KXSA" role="vertex" description=""/>
-    <station icao="KRMN" role="vertex" description=""/>
+    <station icao="KTGI"/>
+    <station icao="KXSA"/>
+    <station icao="KRMN"/>
 
-    <station icao="KFRR" role="vertex" description=""/>
-    <station icao="KLUA" role="vertex" description=""/>
-    <station icao="KHWY" role="vertex" description=""/>
-    <station icao="KLKU" role="vertex" description=""/>
-    <station icao="KFVX" role="vertex" description=""/>
-    <station icao="KW78" role="vertex" description=""/>
-    <station icao="KHSP" role="vertex" description=""/>
+    <station icao="KFRR"/>
+    <station icao="KLUA"/>
+    <station icao="KHWY"/>
+    <station icao="KLKU"/>
+    <station icao="KFVX"/>
+    <station icao="KW78"/>
+    <station icao="KHSP"/>
 
   </stations>
+
+  <!-- NDBC buoys: inherit ceiling/vis from nearest METAR station -->
+<buoys>
+  <buoy id="44099" description="Chesapeake Bay mouth"/>
+  <buoy id="41025" description="Diamond Shoals"/>
+</buoys>
 
   <!-- Grid resolution: points per degree (used by interpolation layer) -->
   <grid resolution="20"/>

@@ -8,6 +8,7 @@ Flags
 -----
 --map       topo | satellite | street | vfr      (default: topo)
 --voronoi   enable Voronoi cell overlay
+--save-gif  PATH  save animation to GIF instead of displaying interactively
 """
 
 from __future__ import annotations
@@ -34,21 +35,20 @@ SUBSTEPS_PER_HOUR = 4
 TILE_ZOOM         = 9
 
 
-
 # ── shade registry ────────────────────────────────────────────────────────────
 
 _FC_CMAP = ListedColormap(["magenta", "red", "#4488ff", "green"])
 _FC_NORM = BoundaryNorm([0, 1, 2, 3, 4], 4)
 
 SHADE_OPTS = {
-    "wspd":     {"label": "Wind Speed",    "vmin": 0,     "vmax": 15,   "cmap": "plasma",   "unit": "m/s"},
-    "gust":     {"label": "Gust Delta",    "vmin": 0,     "vmax": 8,    "cmap": "hot_r",    "unit": "m/s"},
-    "temp":     {"label": "Temperature",   "vmin": -5,    "vmax": 35,   "cmap": "RdYlBu_r", "unit": "C"},
-    "pressure": {"label": "Pressure",      "vmin": 29.5,  "vmax": 30.8, "cmap": "viridis",  "unit": "inHg"},
-    "dewdep":   {"label": "Dewpt Dep.",    "vmin": 0,     "vmax": 20,   "cmap": "YlOrBr",   "unit": "C"},
+    "wspd":      {"label": "Wind Speed",   "vmin": 0,     "vmax": 15,   "cmap": "plasma",   "unit": "m/s"},
+    "gust":      {"label": "Gust Delta",   "vmin": 0,     "vmax": 8,    "cmap": "hot_r",    "unit": "m/s"},
+    "temp":      {"label": "Temperature",  "vmin": -5,    "vmax": 35,   "cmap": "RdYlBu_r", "unit": "C"},
+    "pressure":  {"label": "Pressure",     "vmin": 29.5,  "vmax": 30.8, "cmap": "viridis",  "unit": "inHg"},
+    "dewdep":    {"label": "Dewpt Dep.",   "vmin": 0,     "vmax": 20,   "cmap": "YlOrBr",   "unit": "C"},
     "visibility":{"label": "Visibility",   "vmin": 0,     "vmax": 10,   "cmap": "Blues_r",  "unit": "sm"},
-    "ceiling":  {"label": "Ceiling",       "vmin": 0,     "vmax": 5000, "cmap": "cool",     "unit": "ft"},
-    "flightcat":{"label": "Flight Cat.",   "vmin": 0,     "vmax": 4,    "cmap": _FC_CMAP,   "unit": ""},
+    "ceiling":   {"label": "Ceiling",      "vmin": 0,     "vmax": 5000, "cmap": "cool",     "unit": "ft"},
+    "flightcat": {"label": "Flight Cat.",  "vmin": 0,     "vmax": 4,    "cmap": _FC_CMAP,   "unit": ""},
 }
 _LABEL_TO_KEY = {v["label"]: k for k, v in SHADE_OPTS.items()}
 
@@ -238,14 +238,15 @@ def run_animation(
     obs_data:       dict,
     start,
     end,
-    playback_speed: float = 1.0,
-    spatial_method: str   = "barnes",
-    temporal_mode:  str   = "linear",
-    gust_mode:      str   = "envelope",
-    map_style:      str   = "topo",
-    voronoi:        bool  = False,
-    blend:          bool  = False,
-    cv_polygon:     object = None,
+    playback_speed: float       = 1.0,
+    spatial_method: str         = "barnes",
+    temporal_mode:  str         = "linear",
+    gust_mode:      str         = "envelope",
+    map_style:      str         = "topo",
+    voronoi:        bool        = False,
+    blend:          bool        = False,
+    cv_polygon:     object      = None,
+    save_gif:       str | None  = None,
 ) -> animation.FuncAnimation:
 
     # ── timeline ──────────────────────────────────────────────────────────────
@@ -298,6 +299,7 @@ def run_animation(
     if blend:
         from weather.interpolate import make_grid
         _blend_grid_lat, _blend_grid_lon = make_grid(extent, resolution=15)
+
     # ── colormap (dynamic — updated when shade changes) ───────────────────────
     _shade  = ["wspd"]
     _opt    = SHADE_OPTS["wspd"]
@@ -329,11 +331,13 @@ def run_animation(
     vor_order, vor_col = [], None
     if voronoi and len(stations) >= 3:
         print("  Building Voronoi cells...")
-        _cv = cv_polygon if cv_polygon is not None else __import__("numpy").array([[extent[0],extent[2]],[extent[1],extent[2]],[extent[1],extent[3]],[extent[0],extent[3]]])
+        _cv = cv_polygon if cv_polygon is not None else __import__("numpy").array(
+            [[extent[0], extent[2]], [extent[1], extent[2]],
+             [extent[1], extent[3]], [extent[0], extent[3]]]
+        )
         vor_order, vor_col = _build_voronoi_collection(coords, _cv, ax, cmap, norm)
     elif voronoi:
         print("  Warning: need >= 3 stations for Voronoi. Skipping.")
-
 
     # ── CV boundary ──────────────────────────────────────────────────────────
     if cv_polygon is not None:
@@ -364,8 +368,8 @@ def run_animation(
 
     from matplotlib.lines import Line2D
     legend_handles = [
-        Line2D([0],[0], marker=">", color=tc,     label="Wind", markersize=8, linewidth=0),
-        Line2D([0],[0], marker=">", color="cyan",  label="Gust", markersize=8, linewidth=0, alpha=0.5),
+        Line2D([0],[0], marker=">", color=tc,    label="Wind", markersize=8, linewidth=0),
+        Line2D([0],[0], marker=">", color="cyan", label="Gust", markersize=8, linewidth=0, alpha=0.5),
     ]
     if voronoi:
         from matplotlib.patches import Patch
@@ -382,48 +386,36 @@ def run_animation(
         color=tc, fontsize=13, pad=8, fontfamily="monospace",
     )
 
-    # ── slider + button ───────────────────────────────────────────────────────
-    sl_ax  = fig.add_axes([0.10, 0.05, 0.68, 0.025],
-                          facecolor="#1e2a35" if dark else "#dde")
-    slider = Slider(sl_ax, "", 0, n_frames - 1, valinit=0, valstep=1, color="#4a90d9")
-    slider.valtext.set_visible(False)
-    sl_ax.set_xlabel("Timeline", color=tc, fontsize=8, labelpad=2)
+    # ── slider + button (skipped when saving GIF — non-interactive) ───────────
+    if not save_gif:
+        sl_ax  = fig.add_axes([0.10, 0.05, 0.68, 0.025],
+                              facecolor="#1e2a35" if dark else "#dde")
+        slider = Slider(sl_ax, "", 0, n_frames - 1, valinit=0, valstep=1,
+                        color="#4a90d9")
+        slider.valtext.set_visible(False)
+        sl_ax.set_xlabel("Timeline", color=tc, fontsize=8, labelpad=2)
 
-    btn_ax = fig.add_axes([0.82, 0.04, 0.07, 0.045])
-    btn    = Button(btn_ax, "|| Pause",
-                    color="#1e2a35" if dark else "#ccd",
-                    hovercolor="#2e3a45" if dark else "#aab")
-    btn.label.set_color(tc)
-    btn.label.set_fontsize(9)
+        btn_ax = fig.add_axes([0.82, 0.04, 0.07, 0.045])
+        btn    = Button(btn_ax, "|| Pause",
+                        color="#1e2a35" if dark else "#ccd",
+                        hovercolor="#2e3a45" if dark else "#aab")
+        btn.label.set_color(tc)
+        btn.label.set_fontsize(9)
 
-
-    # ── shade selector (RadioButtons) ────────────────────────────────────────
-    radio_ax = fig.add_axes(
-        [0.79, 0.22, 0.19, 0.58],
-        facecolor="#111820" if dark else "#e8eaf0"
-    )
-    radio_ax.set_title("Shading", color=tc, fontsize=8, pad=4)
-    radio = RadioButtons(
-        radio_ax,
-        labels=[SHADE_OPTS[k]["label"] for k in SHADE_OPTS],
-        active=0,
-    )
-    for lbl in radio.labels:
-        lbl.set_fontsize(8)
-        lbl.set_color(tc)
-
-
-    def _on_shade(label):
-        key = _LABEL_TO_KEY[label]
-        _shade[0] = key
-        new_cmap, new_norm = _update_shade_style(key)
-        # Update cmap/norm used by render
-        _render_cmap[0]  = new_cmap
-        _render_norm[0]  = new_norm
-        _render(_frame[0])
-        fig.canvas.draw_idle()
-
-    radio.on_clicked(_on_shade)
+        # ── shade selector (RadioButtons) ─────────────────────────────────────
+        radio_ax = fig.add_axes(
+            [0.79, 0.22, 0.19, 0.58],
+            facecolor="#111820" if dark else "#e8eaf0"
+        )
+        radio_ax.set_title("Shading", color=tc, fontsize=8, pad=4)
+        radio = RadioButtons(
+            radio_ax,
+            labels=[SHADE_OPTS[k]["label"] for k in SHADE_OPTS],
+            active=0,
+        )
+        for lbl in radio.labels:
+            lbl.set_fontsize(8)
+            lbl.set_color(tc)
 
     # ── mutable state ─────────────────────────────────────────────────────────
     _qw              = [None]
@@ -433,6 +425,19 @@ def run_animation(
     _slider_dragging = [False]
     _render_cmap     = [cmap]
     _render_norm     = [norm]
+
+    # ── shade callback (only wired when interactive) ──────────────────────────
+    if not save_gif:
+        def _on_shade(label):
+            key = _LABEL_TO_KEY[label]
+            _shade[0] = key
+            new_cmap, new_norm = _update_shade_style(key)
+            _render_cmap[0] = new_cmap
+            _render_norm[0] = new_norm
+            _render(_frame[0])
+            fig.canvas.draw_idle()
+
+        radio.on_clicked(_on_shade)
 
     # ── OU envelopes ──────────────────────────────────────────────────────────
     ou_p95: dict[str, list[float]] = {}
@@ -491,36 +496,29 @@ def run_animation(
                 for stn in stations
             ] if obs is not None}
             if len(snapshot) >= 2:
-                field    = interpolate_field(snapshot, _blend_grid_lat, _blend_grid_lon,
-                                           method=spatial_method)
-                # Build per-grid-point shade values
-                # For wind-derived fields use the interpolated field directly;
-                # for obs-only fields (vis, ceiling, flightcat) fall back to wspd field
+                field = interpolate_field(snapshot, _blend_grid_lat, _blend_grid_lon,
+                                          method=spatial_method)
                 sk = _shade[0]
                 if sk == "wspd":
                     grid_vals = field["speed"]
                 elif sk == "gust":
-                    grid_vals = field["gust_speed"] - field["speed"]
-                    grid_vals = grid_vals.clip(0)
+                    grid_vals = (field["gust_speed"] - field["speed"]).clip(0)
                 elif sk == "temp":
                     grid_vals = field["T"]
                 else:
-                    # Non-interpolatable fields: build from station snapshot
-                    from weather.interpolate import make_grid as _mg
                     import numpy as _np2
-                    raw_vals = _np2.array([
-                        _shade_value(obs_s, sk)
-                        for obs_s in snapshot.values()
-                    ])
+                    from scipy.interpolate import RBFInterpolator
+                    raw_vals = _np2.array([_shade_value(obs_s, sk)
+                                           for obs_s in snapshot.values()])
                     _lats = _np2.array([o["lat"] for o in snapshot.values()])
                     _lons = _np2.array([o["lon"] for o in snapshot.values()])
-                    from scipy.interpolate import RBFInterpolator
                     rbf = RBFInterpolator(
                         _np2.column_stack([_lats.ravel(), _lons.ravel()]),
                         raw_vals, smoothing=0.5
                     )
                     grid_vals = rbf(
-                        _np2.column_stack([_blend_grid_lat.ravel(), _blend_grid_lon.ravel()])
+                        _np2.column_stack([_blend_grid_lat.ravel(),
+                                           _blend_grid_lon.ravel()])
                     ).reshape(_blend_grid_lat.shape)
 
                 _cm, _nm = _render_cmap[0], _render_norm[0]
@@ -573,36 +571,43 @@ def run_animation(
 
         clock.set_text(t.strftime("UTC  %Y-%m-%d  %H:%M"))
 
-    # ── tick / slider / button ────────────────────────────────────────────────
-    def _tick(i):
-        if _slider_dragging[0]:
+    # ── tick / slider / button (interactive only) ─────────────────────────────
+    if not save_gif:
+        def _tick(i):
+            if _slider_dragging[0]:
+                return []
+            if _playing[0]:
+                _frame[0] = (_frame[0] + 1) % n_frames
+            _render(_frame[0])
+            slider.eventson = False
+            slider.set_val(_frame[0])
+            slider.eventson = True
+            fig.canvas.draw_idle()
             return []
-        if _playing[0]:
-            _frame[0] = (_frame[0] + 1) % n_frames
-        _render(_frame[0])
-        slider.eventson = False
-        slider.set_val(_frame[0])
-        slider.eventson = True
-        fig.canvas.draw_idle()
-        return []
 
-    def _on_slider(val):
-        _frame[0] = int(val)
-        _render(_frame[0])
-        fig.canvas.draw_idle()
+        def _on_slider(val):
+            _frame[0] = int(val)
+            _render(_frame[0])
+            fig.canvas.draw_idle()
 
-    slider.on_changed(_on_slider)
-    fig.canvas.mpl_connect("button_press_event",
-                           lambda e: _slider_dragging.__setitem__(0, e.inaxes == sl_ax))
-    fig.canvas.mpl_connect("button_release_event",
-                           lambda e: _slider_dragging.__setitem__(0, False))
+        slider.on_changed(_on_slider)
+        fig.canvas.mpl_connect("button_press_event",
+                               lambda e: _slider_dragging.__setitem__(0, e.inaxes == sl_ax))
+        fig.canvas.mpl_connect("button_release_event",
+                               lambda e: _slider_dragging.__setitem__(0, False))
 
-    def _toggle(event):
-        _playing[0] = not _playing[0]
-        btn.label.set_text("|| Pause" if _playing[0] else ">  Play")
-        fig.canvas.draw_idle()
+        def _toggle(event):
+            _playing[0] = not _playing[0]
+            btn.label.set_text("|| Pause" if _playing[0] else ">  Play")
+            fig.canvas.draw_idle()
 
-    btn.on_clicked(_toggle)
+        btn.on_clicked(_toggle)
+
+    else:
+        # Non-interactive tick for GIF export
+        def _tick(i):
+            _render(i)
+            return []
 
     fps         = n_steps / (total_hours / playback_speed)
     interval_ms = max(50, int(1000.0 / fps))
@@ -612,5 +617,16 @@ def run_animation(
         interval=interval_ms, blit=False, repeat=True,
     )
 
-    plt.show()
+    # ── output ────────────────────────────────────────────────────────────────
+    if save_gif:
+        print(f"  Saving GIF → {save_gif}")
+        print(f"  Frames: {n_frames}  |  FPS: {max(10, int(1000.0 / interval_ms))}")
+        print("  This may take several minutes for long windows...")
+        writer = animation.PillowWriter(fps=max(10, int(1000.0 / interval_ms)))
+        ani.save(save_gif, writer=writer)
+        print("  Done.")
+        plt.close(fig)
+    else:
+        plt.show()
+
     return ani

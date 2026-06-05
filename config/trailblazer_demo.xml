@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simulation>
+  <!-- Temporal bounds (UTC) -->
+  <start>2026-04-21T05:00:00Z</start>
+  <end>2026-04-27T05:00:00Z</end>
+
+  <!-- Control volume: clips Voronoi cells and sets map extent -->
+  <control_volume kml="config/maps/trailblazer_demo.kml"/>
+
+  <!-- AO polygon vertices — also the METAR sources -->
+  <stations>
+    <station icao="KCHO" role="vertex" description="Charlottesville Albemarle"/>
+    <station icao="KLYH"/>
+    <station icao="KROA"/>
+    <station icao="KSHD"/>
+    <station icao="KORF"/>
+    <station icao="KIAD"/>
+    <station icao="KDCA"/>
+    
+    <station icao="KMFV"/>
+    <station icao="KLFI"/>
+    <station icao="KAVC"/>
+    <station icao="KEMV"/>
+    <station icao="KMTV"/>
+    <station icao="KHLX"/>
+    
+    <station icao="KVJI"/>
+    <station icao="KLNP"/>
+    <station icao="K0VG"/>
+
+    <station icao="KPTB"/>
+    <station icao="KRIC"/>
+    <station icao="KFYJ"/>
+
+    <station icao="KTGI"/>
+    <station icao="KXSA"/>
+    <station icao="KRMN"/>
+
+    <station icao="KFRR"/>
+    <station icao="KLUA"/>
+    <station icao="KHWY"/>
+    <station icao="KLKU"/>
+    <station icao="KFVX"/>
+    <station icao="KW78"/>
+    <station icao="KHSP"/>
+
+    <station icao="K6L4"/>
+    <station icao="KBLF"/>
+    <station icao="KCRW"/>
+    <station icao="K48I"/>
+    <station icao="KCKB"/>
+    <station icao="KCBE"/>
+    <station icao="KEKN"/>
+
+    <station icao="KLHG"/>
+    <station icao="KDMW"/>
+    <station icao="KBWI"/>
+    <station icao="KESN"/>
+    <station icao="KDOV"/>
+    <station icao="KSBY"/>
+    <station icao="KGED"/>
+
+    <station icao="KHLG"/>
+    <station icao="KPKB"/>
+    <station icao="KHTS"/>
+    <station icao="KW99"/>
+    <station icao="KMRB"/>
+    <station icao="KLWB"/>
+
+  </stations>
+
+  <!-- NDBC buoys: inherit ceiling/vis from nearest METAR station -->
+<buoys>
+  <buoy id="44099" description="Chesapeake Bay mouth"/>
+  <buoy id="41025" description="Diamond Shoals"/>
+</buoys>
+
+  <!-- Grid resolution: points per degree (used by interpolation layer) -->
+  <grid resolution="20"/>
+</simulation>

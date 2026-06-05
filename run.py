@@ -22,6 +22,7 @@ Options
 --map         STR     Basemap: topo|satellite|street|vfr|none (default: topo)
 --voronoi            Enable Voronoi overlay
 --blend              Smooth interpolated wind field
+--save-gif    PATH    Save animation to GIF at PATH instead of displaying
 
 Traversal options (require --path)
 -----------------------------------
@@ -202,6 +203,9 @@ def main():
     p.add_argument("--voronoi",  action="store_true")
     p.add_argument("--blend",    action="store_true",
                    help="Smooth interpolated wind field")
+    p.add_argument("--save-gif", default=None, metavar="PATH",
+                   help="Save animation as GIF to PATH instead of displaying interactively "
+                        "(e.g. output/animation.gif)")
 
     # ── Traversal args ────────────────────────────────────────────────────────
     p.add_argument("--path",        default=None, metavar="KML",
@@ -238,6 +242,8 @@ def main():
     print(f"  Gust mode : {args.gust}")
     if not args.path:
         print(f"  Speed     : {args.speed}x (sim-hrs/sec)")
+    if args.save_gif:
+        print(f"  GIF out   : {args.save_gif}")
     print()
     print("  Fetching METARs from Iowa State Mesonet...")
 
@@ -261,7 +267,7 @@ def main():
         coords = np.array(
             [[obs_data[s][0]["lon"], obs_data[s][0]["lat"]] for s in obs_data]
         )
-        hull      = ConvexHull(coords)
+        hull       = ConvexHull(coords)
         cv_polygon = coords[hull.vertices]
         print("  CV polygon: auto convex hull from station coordinates")
 
@@ -284,6 +290,7 @@ def main():
             voronoi        = args.voronoi,
             blend          = args.blend,
             cv_polygon     = cv_polygon,
+            save_gif       = args.save_gif,
         )
 
 
